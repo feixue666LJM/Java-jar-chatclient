@@ -1,0 +1,26 @@
+{
+    "schemaVersion": 1,
+    "id": "booger",
+    "version": "1.0.0",
+    "name": "booger",
+    "description": "聊天客户端 Minecraft Fabric 集成模组 — 自动以玩家ID登录，跳过命名环节",
+    "authors": [],
+    "contact": {},
+    "license": "All Rights Reserved",
+    
+    "environment": "client",
+    "entrypoints": {
+        "client": [
+            "booger.BoogerMod"
+        ]
+    },
+    "depends": {
+        "fabricloader": ">=0.14.22",
+        "fabric-api": "*",
+        "minecraft": ">=1.20.1",
+        "java": ">=17"
+    },
+    "suggests": {
+        "chatspeak": "*"
+    }
+}
