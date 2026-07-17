@@ -3,8 +3,6 @@ package booger;
 import chatspeak.ChatClient;
 import javax.swing.*;
 import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.HashMap;
 
 /**
  * Minecraft <-> ChatClient bridge.
@@ -18,18 +16,6 @@ public class MinecraftChatBridge {
     private static Object chatClientInstance;
 
     private static final String PUBLIC_CHANNEL_GROUP = "group_public";
-
-    private static final Map<String, String> ACCOUNT_GROUPS = new HashMap<>();
-
-    static {
-        ACCOUNT_GROUPS.put("feixuechat", "group_feixue");
-        ACCOUNT_GROUPS.put("ash", "group_ash");
-        ACCOUNT_GROUPS.put("antiash", "group_antiash");
-        ACCOUNT_GROUPS.put("binglin", "group_binglin");
-        ACCOUNT_GROUPS.put("feixuehome", "group_feixuehome");
-        ACCOUNT_GROUPS.put("toney", "group_toney");
-    }
-
     /**
      * Called from BoogerMod.onInitializeClient().
      * Waits 1.5s for game init, then gets the player name via
@@ -76,7 +62,7 @@ public class MinecraftChatBridge {
     public static void launchChatClient(String minecraftPlayerName, String accountName) {
         SwingUtilities.invokeLater(() -> {
             try {
-                String group = ACCOUNT_GROUPS.getOrDefault(accountName, accountName);
+                String group = accountName != null ? accountName : PUBLIC_CHANNEL_GROUP;
                 chatClientInstance = ChatClient.startWithAutoLogin(minecraftPlayerName, group);
                 System.out.println("[booger] ChatClient launched for: " + minecraftPlayerName);
             } catch (Exception e) {

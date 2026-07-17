@@ -1,4 +1,4 @@
-package yemian;
+﻿package yemian;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,16 +12,17 @@ import java.net.Socket;
 import java.net.InetSocketAddress;
 
 public class twoyemian extends JFrame {
-    private JTextField groupNameField;
-    private JPasswordField passwordField;
-    private JButton loginBtn;
-    private JCheckBox noPasswordCheckBox;
-    private JCheckBox publicChannelCheckBox;
+    private JTextField groupNameField;          // 群组名称输入框
+    private JPasswordField passwordField;       // 密码输入框
+    private JButton loginBtn;                   // 登录按钮
+    private JCheckBox publicChannelCheckBox;    // 公共频道复选框
     private JTextField serverHostField;
     private JTextField serverPortField;
 
+    // 公共频道群组名
     private static final String PUBLIC_CHANNEL_GROUP = "group_public";
 
+    // 回调接口，用于通知主类登录成功
     public interface LoginCallback {
         void onLoginSuccess(String username, String group, String password);
     }
@@ -34,102 +35,82 @@ public class twoyemian extends JFrame {
     }
 
     private void initUI() {
-        setTitle("\u767B\u5F55");
-        setSize(470, 370);
+        setTitle("登录");
+        setSize(470, 320);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
+        // 标题面板
         JPanel titlePanel = new JPanel();
         titlePanel.setBackground(Color.WHITE);
-        JLabel titleLabel = new JLabel("\u80A5\u96EA\u7684\u7FA4\u804A");
-        titleLabel.setFont(new Font("\u5FAE\u8F6F\u96C5\u9ED1", Font.BOLD, 18));
+        JLabel titleLabel = new JLabel("肥雪的群聊");
+        titleLabel.setFont(new Font("微软雅黑", Font.BOLD, 18));
         titleLabel.setHorizontalAlignment(SwingConstants.CENTER);
         titlePanel.add(titleLabel);
         add(titlePanel, BorderLayout.NORTH);
 
+        // 登录面板
         JPanel loginPanel = new JPanel(new GridBagLayout());
         loginPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(5, 5, 5, 5);
         gbc.anchor = GridBagConstraints.WEST;
 
-        // Row 0: Group name
+        // 群组名称输入
         gbc.gridx = 0; gbc.gridy = 0;
-        loginPanel.add(new JLabel("\u7FA4\u7EC4\u540D\u79F0:"), gbc);
+        loginPanel.add(new JLabel("群组名称:"), gbc);
 
         gbc.gridx = 1; gbc.gridy = 0; gbc.fill = GridBagConstraints.HORIZONTAL;
         groupNameField = new JTextField(15);
         loginPanel.add(groupNameField, gbc);
 
-        // Row 1: Password
+        // 密码输入
         gbc.gridx = 0; gbc.gridy = 1; gbc.fill = GridBagConstraints.NONE;
-        loginPanel.add(new JLabel("\u7FA4\u7EC4\u5BC6\u7801:"), gbc);
+        loginPanel.add(new JLabel("群组密码:"), gbc);
 
         gbc.gridx = 1; gbc.gridy = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
         passwordField = new JPasswordField(15);
         loginPanel.add(passwordField, gbc);
 
-        // Row 2: No password checkbox (mutually exclusive with public channel)
-        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 2; gbc.fill = GridBagConstraints.NONE;
-        gbc.anchor = GridBagConstraints.WEST;
-        noPasswordCheckBox = new JCheckBox("\u65E0\u5BC6\u7801\uFF08\u65E0\u5BC6\u7801\u79C1\u6709\u9891\u9053\uFF09");
-        noPasswordCheckBox.addActionListener(e -> {
-            if (noPasswordCheckBox.isSelected()) {
-                publicChannelCheckBox.setSelected(false);
-                passwordField.setEnabled(false);
-                passwordField.setText("");
-                groupNameField.setEnabled(true);
-            } else {
-                passwordField.setEnabled(true);
-                groupNameField.setEnabled(true);
-            }
-        });
-        loginPanel.add(noPasswordCheckBox, gbc);
-
-        // Row 3: Server host code
-        gbc.gridx = 0; gbc.gridy = 3; gbc.gridwidth = 1; gbc.fill = GridBagConstraints.NONE;
-        loginPanel.add(new JLabel("\u670D\u52A1\u5668\u5730\u5740\u4EE3\u7801:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 2; gbc.gridwidth = 1; gbc.fill = GridBagConstraints.NONE;
+        loginPanel.add(new JLabel("服务器地址代码:"), gbc);
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
         serverHostField = new JTextField(ServerConfig.getDisplayHost(), 18);
-        serverHostField.setToolTipText("\u652F\u6301\u6570\u5B57IP\u6216\u5C0F\u5199\u66FF\u4EE3\u4EE3\u7801\uFF1Aa=1 ... i=9\uFF0Cz=0");
+        serverHostField.setToolTipText("支持数字IP或小写替代代码：a=1 ... i=9，z=0");
         loginPanel.add(serverHostField, gbc);
 
-        // Row 4: Server port
-        gbc.gridx = 0; gbc.gridy = 4; gbc.fill = GridBagConstraints.NONE;
-        loginPanel.add(new JLabel("\u670D\u52A1\u5668\u7AEF\u53E3:"), gbc);
+        gbc.gridx = 0; gbc.gridy = 3; gbc.fill = GridBagConstraints.NONE;
+        loginPanel.add(new JLabel("服务器端口:"), gbc);
         gbc.gridx = 1; gbc.fill = GridBagConstraints.HORIZONTAL;
         serverPortField = new JTextField(String.valueOf(ServerConfig.getPort()), 8);
         loginPanel.add(serverPortField, gbc);
 
-        // Row 5: Public channel checkbox (mutually exclusive with no password)
-        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2; gbc.fill = GridBagConstraints.NONE;
+        // 公共频道复选框
+        gbc.gridx = 0; gbc.gridy = 4; gbc.gridwidth = 2; gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.WEST;
-        publicChannelCheckBox = new JCheckBox("\u8FDB\u5165\u516C\u5171\u9891\u9053\uFF08\u65E0\u9700\u5BC6\u7801\uFF09");
+        publicChannelCheckBox = new JCheckBox("进入公共频道（无需密码）");
         publicChannelCheckBox.addActionListener(e -> {
             boolean selected = publicChannelCheckBox.isSelected();
+            groupNameField.setEnabled(!selected);
+            passwordField.setEnabled(!selected);
             if (selected) {
-                noPasswordCheckBox.setSelected(false);
-                groupNameField.setEnabled(false);
-                passwordField.setEnabled(false);
                 groupNameField.setText("");
                 passwordField.setText("");
-            } else {
-                groupNameField.setEnabled(true);
-                passwordField.setEnabled(true);
             }
         });
         loginPanel.add(publicChannelCheckBox, gbc);
 
-        // Row 6: Login button
-        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 2;
+        // 登录按钮
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 2;
         gbc.fill = GridBagConstraints.NONE; gbc.anchor = GridBagConstraints.CENTER;
         gbc.insets = new Insets(10, 5, 5, 5);
-        loginBtn = new JButton("\u767B\u5F55");
+        loginBtn = new JButton("登录");
         loginPanel.add(loginBtn, gbc);
 
         add(loginPanel, BorderLayout.CENTER);
 
+        // 事件监听
         loginBtn.addActionListener(new LoginListener());
         passwordField.addActionListener(new LoginListener());
 
@@ -140,7 +121,6 @@ public class twoyemian extends JFrame {
         @Override
         public void actionPerformed(ActionEvent e) {
             boolean isPublicChannel = publicChannelCheckBox.isSelected();
-            boolean isNoPassword = noPasswordCheckBox.isSelected();
             String groupName = groupNameField.getText().trim();
             String password = new String(passwordField.getPassword()).trim();
 
@@ -153,84 +133,83 @@ public class twoyemian extends JFrame {
                 ServerConfig.save(serverHostField.getText(), serverPort);
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(twoyemian.this,
-                        "\u670D\u52A1\u5668\u5730\u5740\u6216\u7AEF\u53E3\u65E0\u6548", "\u8FDE\u63A5\u8BBE\u7F6E\u9519\u8BEF", JOptionPane.ERROR_MESSAGE);
+                        "服务器地址或端口无效", "连接设置错误", JOptionPane.ERROR_MESSAGE);
                 return;
             }
 
-            // Validate inputs based on mode
-            if (isPublicChannel) {
-                // Public channel: group name optional (used as nickname)
-                if (groupName.isEmpty()) {
-                    groupName = "\u7528\u6237" + System.currentTimeMillis() % 10000;
-                }
-            } else {
-                // Private channel (with or without password): group name required
+            if (!isPublicChannel) {
                 if (groupName.isEmpty()) {
                     JOptionPane.showMessageDialog(twoyemian.this,
-                        "\u8BF7\u8F93\u5165\u7FA4\u7EC4\u540D\u79F0\uFF01", "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                        "请输入群组名称！", "登录失败", JOptionPane.ERROR_MESSAGE);
                     groupNameField.requestFocus();
                     return;
                 }
-                // No-password mode: skip password validation, send empty password
-                if (isNoPassword) {
-                    password = "";
-                } else if (password.isEmpty()) {
+                if (password.isEmpty()) {
                     JOptionPane.showMessageDialog(twoyemian.this,
-                        "\u8BF7\u8F93\u5165\u7FA4\u7EC4\u5BC6\u7801\uFF01", "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                        "请输入群组密码！", "登录失败", JOptionPane.ERROR_MESSAGE);
                     passwordField.requestFocus();
                     return;
                 }
+            } else if (groupName.isEmpty()) {
+                // 公共频道：群组名称作为昵称，可选为空
+                groupName = "用户" + System.currentTimeMillis() % 10000;
             }
 
-            final String finalGroupName = groupName;
-            final String finalPassword = password;
-
+            // 在后台线程中验证密码
             new Thread(() -> {
                 if (isPublicChannel) {
-                    loginToPublicChannel(finalGroupName);
+                    loginToPublicChannel(groupName);
                 } else {
-                    verifyPassword(finalGroupName, finalPassword);
+                    verifyPassword(groupName, password);
                 }
             }).start();
         }
 
         private void verifyPassword(String groupName, String password) {
             try {
+                // 连接到服务器并验证密码
                 Socket socket = new Socket();
                 socket.connect(new InetSocketAddress(ServerConfig.getHost(), ServerConfig.getPort()), 8000);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
+                // 发送登录信息到服务器
                 out.println("/login|" + groupName + "|" + password);
 
+                // 等待服务器响应
                 String response = in.readLine();
 
+                // 关闭连接
                 in.close();
                 out.close();
                 socket.close();
 
+                // 处理服务器响应
                 if (response != null && response.startsWith("/login_result|")) {
-                    String result = response.substring(14);
+                    String result = response.substring(14); // 提取结果
                     if ("success".equals(result)) {
+                        // 密码验证成功，以 "group_"+群组名 作为频道名称
                         SwingUtilities.invokeLater(() -> {
                             String groupChannel = "group_" + groupName;
                             if (callback != null) {
                                 callback.onLoginSuccess(groupName, groupChannel, password);
                             }
-                            dispose();
+                            dispose(); // 关闭登录窗口
                         });
                     } else {
+                        // 密码验证失败
                         SwingUtilities.invokeLater(() -> {
                             JOptionPane.showMessageDialog(twoyemian.this,
-                                "\u7FA4\u7EC4\u5BC6\u7801\u9519\u8BEF\uFF0C\u8BF7\u91CD\u65B0\u8F93\u5165\uFF01", "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                                "群组密码错误，请重新输入！", "登录失败", JOptionPane.ERROR_MESSAGE);
                             passwordField.setText("");
                             passwordField.requestFocus();
                         });
                     }
                 } else {
+                    // 服务器响应异常
                     SwingUtilities.invokeLater(() -> {
                         JOptionPane.showMessageDialog(twoyemian.this,
-                            "\u670D\u52A1\u5668\u54CD\u5E94\u5F02\u5E38\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF01", "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                            "服务器响应异常，请稍后重试！", "登录失败", JOptionPane.ERROR_MESSAGE);
                         passwordField.setText("");
                         passwordField.requestFocus();
                     });
@@ -238,7 +217,7 @@ public class twoyemian extends JFrame {
             } catch (IOException ex) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(twoyemian.this,
-                        "\u65E0\u6CD5\u8FDE\u63A5\u5230\u670D\u52A1\u5668\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u8FDE\u63A5\u540E\u518D\u8BD5\uFF01", "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                        "无法连接到服务器，请检查网络连接后再试！", "登录失败", JOptionPane.ERROR_MESSAGE);
                     passwordField.setText("");
                     passwordField.requestFocus();
                 });
@@ -247,40 +226,48 @@ public class twoyemian extends JFrame {
 
         private void loginToPublicChannel(String nickname) {
             try {
+                // 连接到服务器
                 Socket socket = new Socket();
                 socket.connect(new InetSocketAddress(ServerConfig.getHost(), ServerConfig.getPort()), 8000);
                 BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
                 PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
+                // 发送公共频道登录信息到服务器
                 out.println("/login_public|" + nickname);
 
+                // 等待服务器响应
                 String response = in.readLine();
 
+                // 关闭连接
                 in.close();
                 out.close();
                 socket.close();
 
+                // 处理服务器响应
                 if (response != null && response.startsWith("/login_result|")) {
-                    String result = response.substring(14);
+                    String result = response.substring(14); // 提取结果
                     if ("success".equals(result)) {
+                        // 登录成功，通知主程序
                         SwingUtilities.invokeLater(() -> {
                             if (callback != null) {
                                 callback.onLoginSuccess(nickname, PUBLIC_CHANNEL_GROUP, "");
                             }
-                            dispose();
+                            dispose(); // 关闭登录窗口
                         });
                     } else {
+                        // 登录失败
                         SwingUtilities.invokeLater(() -> {
                             JOptionPane.showMessageDialog(twoyemian.this,
-                                "\u516C\u5171\u9891\u9053\u767B\u5F55\u5931\u8D25: " + result, "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                                "公共频道登录失败: " + result, "登录失败", JOptionPane.ERROR_MESSAGE);
                             passwordField.setText("");
                             passwordField.requestFocus();
                         });
                     }
                 } else {
+                    // 服务器响应异常
                     SwingUtilities.invokeLater(() -> {
                         JOptionPane.showMessageDialog(twoyemian.this,
-                            "\u670D\u52A1\u5668\u54CD\u5E94\u5F02\u5E38\uFF0C\u8BF7\u7A0D\u540E\u91CD\u8BD5\uFF01", "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                            "服务器响应异常，请稍后重试！", "登录失败", JOptionPane.ERROR_MESSAGE);
                         passwordField.setText("");
                         passwordField.requestFocus();
                     });
@@ -288,7 +275,7 @@ public class twoyemian extends JFrame {
             } catch (IOException ex) {
                 SwingUtilities.invokeLater(() -> {
                     JOptionPane.showMessageDialog(twoyemian.this,
-                        "\u65E0\u6CD5\u8FDE\u63A5\u5230\u670D\u52A1\u5668\uFF0C\u8BF7\u68C0\u67E5\u7F51\u7EDC\u8FDE\u63A5\u540E\u518D\u8BD5\uFF01", "\u767B\u5F55\u5931\u8D25", JOptionPane.ERROR_MESSAGE);
+                        "无法连接到服务器，请检查网络连接后再试！", "登录失败", JOptionPane.ERROR_MESSAGE);
                     passwordField.setText("");
                     passwordField.requestFocus();
                 });
